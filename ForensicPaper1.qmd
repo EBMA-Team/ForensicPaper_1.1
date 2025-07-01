@@ -1,0 +1,1899 @@
+---
+title: "Application of forensic meta-science to selected orthopaedic papers: Paper 1 10.1177/0363546506296042 (Pincz-ewski et al 2007)"
+description: | 
+  A summary of the CONSORT checklist applied to the target paper
+author: 
+- name: Corey Scholes
+  affiliation: EBM Analytics
+  affiliation-url: https://www.ebmanalytics.com.au
+version: 1.1
+date: "2025-Feb-15"
+date-modified: "2025-Jun-30"
+citation: true
+type: website
+editor: visual
+code-annotations: true
+execute: 
+  echo: true
+  warning: false
+  message: false
+format:
+  html:
+    toc: true
+    number-sections: true
+    code-fold: true
+    
+bibliography: ForensicPapers.bib
+---
+
+# Analysis Preamble
+
+This analysis acts as a training activity to apply techniques described in [@heathers2025].
+
+I will extend this approach, by encapsulating a review within the contemporary reporting guidelines for the trial reported in the paper in question.
+
+The analysis was conducted in RStudio IDE (RStudio 2024.12.0+467 "Kousa Dogwood" Release) using *Rbase* [@base], *quarto* [@quarto] and attached packages. You may notice a slight delay between the date you read this online somewhere and when the data was retrieved. It seems I managed to time my first run at this just as the CONSORT group were finalising a complete overhaul of the CONSORT statement 15 years after the original was published. I thought I would wait for the dust settled to a degree before realigning my report to the new checklist.
+
+If you're expecting me to offer solutions in this report, you will have to wait a bit longer until the next chapter of the series, where I will present a hypothetical trial that addresses as many of the issues raised as possible.
+
+## My Conflicts Up Front
+
+-   I am a shareholder in [EBM Analytics](www.ebmanalytics.com.au).
+
+    -   I declare an institutional engagement with Smith and Nephew for a small project \>3 years ago that is unrelated to the topic of the target paper.
+
+-   I would call myself an acquaintance of the study authors
+
+    -   I appeared as a co-authored on a paper with Justin Roe [@Oussedik2012] \>10 years ago.
+
+-   Am I jealous of the citation record of this article - absolutely not, my interest here is to i) demonstrate that science can evolve of its own accord, ii) provide guidance to others in designing better quality studies in this very narrow domain and iii) ultimately better serve clinicians and future patients with better quality evidence to feed into robust clinical guidelines.
+
+# Glossary
+
+For those jumping into this without a strong knowledge of the specifics, hopefully the glossary table below will help spin you up.
+
+::: {#tbl-glossary}
++--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Abbreviation | Definition                                | Usage \| Context                                                                                                                                                                                                 |
++==============+===========================================+==================================================================================================================================================================================================================+
+| ACL          | anterior cruciate ligament                | Ligament structure in the knee for which this trial examined different materials used to fashion a graft to replace those that have rupture (torn) usually due to an rotation or impact event acting on the knee |
++--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| ACLR         | anterior cruciate ligament reconstruction |                                                                                                                                                                                                                  |
++--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| PT           | patella tendon                            |                                                                                                                                                                                                                  |
++--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| HT           | hamstring tendon                          |                                                                                                                                                                                                                  |
++--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| RoB          | risk of bias                              |                                                                                                                                                                                                                  |
++--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| SR-MA        | systematic review and meta-analysis       |                                                                                                                                                                                                                  |
++--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|              |                                           |                                                                                                                                                                                                                  |
++--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+Glossary of terms used in the report
+:::
+
+# Executive Summary
+
+The article has not been retracted, nor have any comments been made about it on [PubPeer](https://pubpeer.com/).
+
+It is an attempted randomised (partial randomisation) comparison between two sources of graft material for ACL reconstruction that is potentially influenced by bias in patient selection, lack of blinding and multiplicity of analyses for outcomes that have not been pre-registered. The aims and objectives are not sufficiently specific or structured to allow adequate assessment of the analysis. It is likely that the study never existed in a state of clinical equipoise with respect to the treatment options, or the risk-benefits of each option were not fully understood at the time. Inclusion/exclusion criteria for several analyses have been altered between followup reports on the same cohort and many of the findings still being cited in the contemporary literature are not supported when considering the issues with the statistical analysis and the lack of sample size (power) calculation prior to patient recruitment. The key findings are vulnerable to competing risks (e.g. graft survival) and many cited findings rely on poorly reported regression analyses, where their interpretation has been subject to the Table 2 fallacy.
+
+Overall, this article should probably be retired from public discourse as a premature trial, that lacked robust design and was haphazardly reported, which compared an emerging (at the time of recruitment) treatment option compared to the accepted standard for ACL rupture in patients presenting for surgical review. Patient preference for short-term function restoration balanced against potential of elevated risk of re-rupture remains an under-explored component of establishing clinical equipoise in this patient population.
+
+## Preparation
+
+Load up required packages in advance using *pacman* package (v`{r} utils::packageVersion("pacman")`) [@pacman]. Citations applied to each library at first use in the text.
+
+```{r}
+#| label: prepare-packages
+
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(
+  "cardx",
+  "parallelly",
+  "gargle",
+  "googledrive",
+  "gert",
+  "rsprite2",
+  "scrutiny",
+  "pwrss",
+  "parallel",
+  "progressr",
+  "stringdist",
+  "simsurv",
+  "powerSurvEpi",
+  "wmwpow",
+  "pwrss",
+  "confintr",
+  "simstudy",
+  "statcheck",
+  "gert",
+  "rcrossref",
+  "httr",
+  "jsonlite",
+  "synthesisr",
+  "reshape",
+  "future",
+  "furrr",
+  "memoise",
+  "googlesheets4",
+  "openxlsx2",
+  "readr",
+  "purrr",
+  "tidyverse",
+  "tidymodels",
+  "tidytext",
+  "stopwords",
+  "tictoc",
+  "lubridate",
+  "forcats",
+  "gt",
+  "consort",
+  "gtsummary",
+  "flextable",
+  "survival",
+  "ggplot2",
+  "ggdist",
+  "ggsurvfit",
+  "ggfortify",
+  "mice",
+  "marginaleffects",
+  "patchwork",
+  "naniar",
+  "quantreg",
+  "broom",
+  "broom.helpers",
+  "labelled",
+  "epoxy",
+  "broom.mixed",
+  "lme4",
+  "janitor",
+  "progressr",
+  "DT",
+  "grateful",
+  install = TRUE,
+  update = FALSE
+)
+
+```
+
+```{r}
+#| label: tbl-pkgcite
+#| echo: false
+#| tbl-cap: Summary of package usage and citations
+
+pkgs <- grateful::cite_packages(
+  dependencies = FALSE,
+  output = "table", 
+  out.dir = ".",
+  cite.tidyverse = TRUE,
+  include.RStudio = FALSE,
+  bib.file = "grateful-refs"
+  )
+
+knitr::kable(
+  pkgs
+)
+
+```
+
+The packages drawn on to produce the following report are summarised in @tbl-pkgcite.
+
+## Authorisations
+
+Pre-authorise access to data sources using the *gargle* package (v`{r} utils::packageVersion("gargle")`) [@gargle].
+
+```{r}
+#| label: pre-autho
+#| echo: false
+
+# Set the cache location
+options(gargle_oauth_cache = ".secrets")
+
+# Use the saved token for non-interactive auth
+drive_auth(email = "cscholes@ebma.com.au", 
+          cache = ".secrets")
+```
+
+```{r}
+#| label: authorisation-options
+#| echo: false
+
+options(
+  gargle_oauth_cache = ".secrets",
+  gargle_oauth_email = TRUE
+)
+
+drive_auth(cache = ".secrets", email = TRUE)
+```
+
+Cloned the Retraction Watch git repo to the environment to bounce off later.
+
+```{r}
+#| label: retrieve-rw
+#| execute: true
+
+# Set the repository URL and create a temporary directory
+repo_url <- "https://gitlab.com/crossref/retraction-watch-data.git"
+temp_dir <- tempdir()
+repo_path <- file.path(temp_dir, "retraction-watch-data")
+
+# Clone the repository to the temporary directory
+gert::git_clone(
+  url = repo_url,
+  path = repo_path,
+  verbose = TRUE
+  )
+
+# Access files from the repository
+data_file_path <- file.path(repo_path, "retraction_watch.csv")
+Retractions <- read.csv(data_file_path)
+```
+
+## Reporting Framework
+
+To provide some structure to scrutinising this article - the following guidelines were utilised.
+
+CONSORT 2025 - [@hopewell2025] \[Updated from 2010\]
+
+CONSORT Abstracts - [@hopewell2008]
+
+CONSORT Parallel group trials - [@moher2010; @consort2010]
+
+CONSORT Nonpharmacologic treatments - [@boutron2017]
+
+CONSORT PRO - [@calvert2013]
+
+CONSORT Harms - [@junqueira2023]
+
+CONSORT Outcomes Extension 2022 - [@butcher2022]
+
+# Selected Citation
+
+[@pinczewski2007]
+
+```{r}
+#| label: target-doi
+
+targetDOI = "10.1177/0363546506296042"
+
+```
+
+Retrieve the full citation using the *rcrossref* package (v`{r} utils::packageVersion("rcrossref")`) [@rcrossref].
+
+```{epoxy}
+#| label: full-citation
+
+{rcrossref::cr_cn(dois = targetDOI, format = "text", style = "apa")}
+
+```
+
+## Selection Rationale
+
+The selected paper appears at number 2 in "The top 100 most cited articles in Australian orthopaedic surgery" [@mcmillan2024].
+
+It has been cited 288 times (pubmed) or 524 times (crossref), depending on which citation database you trust the most.
+
+::: {#fig-articleusage}
+![Metrics of selected citation as of 15-Feb-2025](AJSM%20Metrics.png)
+:::
+
+## Summary
+
+You can review the abstract for this paper [here](https://journals.sagepub.com/doi/10.1177/0363546506296042). In brief, this was an attempted RCT comparing two sources of graft material for reconstructing the anterior cruciate ligament in patients participating in high levels of competitive sport at the time of injury. The selected citation is the 10-year follow up of the comparison between groups, with previous reports at 2, 5 and 7 year follow ups (see Trial Protocol).
+
+# Bibliometric Analysis
+
+The burning question was how this paper is being cited in the contemporary literature, what is the sentiment of this paper? Sentiment analysis of citations [@kilicoglu2019], is a very new concept for me - but I wanted to understand how the paper has been used in citations over the last couple of years.
+
+I retrieved the citation list for this paper from *citationchaser* (the shiny app, I cant be bothered signing up for a plan for the API access) [@haddaway2022], which conducts a search through [lens.org](lens.org). Then draw in the bibliographic file with the *synthesisr* package (v`{r} utils::packageVersion("synthesisr")`) [@synthesisr].
+
+```         
+```
+
+```{r}
+#| label: read-citations
+
+# Read the citations from the project folder
+Citations <- synthesisr::read_refs(
+  filename = "Paper1Citations.bib",  # File in the same directory as your .qmd file
+  tag_naming = "wos",
+  return_df = TRUE,
+  verbose = FALSE
+)
+
+
+
+```
+
+Then pull out the last couple of years of citations using *tidyverse* (v`{r} utils::packageVersion("tidyverse")`) [@tidyverse].
+
+```{r}
+#| label: filter-citations
+
+
+CitationRecent <- Citations |> dplyr::select(   year,   DO ) |> dplyr::filter(   year > 2022 )
+```
+
+I took the DOIs and passed them to my reference management software [PaperPile](https://paperpile.com/about/) (PaperPile LLC, USA) and imported them to a folder. The software was able to update the metadata and retrieve fulltext files for those that were open access.
+
+I used the decision framework described by [@kilicoglu2019] to manually label them neutral, positive or negative sentiments with respect to the paper of interest. You can see the results (albeit selective unfortunately) in the table [here](https://docs.google.com/spreadsheets/d/1IYHUTOrSUvxQHVJ94ndt9BwrnIvejDg0EN1xY25k9js/edit?usp=sharing).
+
+The main takeaway is that the majority are *neutral* and mostly use the paper of interest as a support in the introduction. This might indicate a certain level of self-correction in the literature as the trial steadily loses its relevance to the main topic it attempted to address. Either way, a more detailed analysis with changes in citation patterns over time, and without my selection bias, would be required to understand this fully.
+
+## The paper
+
+Check if it appears in the RW database using *stringr* (v`{r} utils::packageVersion("stringr")`) [@stringr]
+
+```{r}
+#| label: retractions-paper
+
+TargetCitation <- rcrossref::cr_works(dois = "10.1177/0363546506296042")
+
+RWPaper <- Retractions |> dplyr::filter(
+  stringr::str_detect(OriginalPaperDOI,TargetCitation$data$doi) 
+)
+
+```
+
+Combine an if loop with the *epoxy* package (v`{r} utils::packageVersion("epoxy")`) [@epoxy] to assess whether there are any retractions.
+
+```{r}
+#| label: count-retractions
+
+if_else(
+  nrow(RWPaper) < 1,
+  "No Retractions Found",
+  epoxy::epoxy("There were {nrow(RWPaper)} retractions identified")
+)
+```
+
+There were 0 comments for this paper on PubPeer \[ 15-Feb-2025\].
+
+## The authors
+
+So I wrote a function to work through the surnames and bounce them against the RW database. We can argue about validation of this step until the cows come home, but for now I'm fairly satisfied that the individual authors do not have any retractions. The function is built on the following packages;
+
+-   *stringr* (v`{r} utils::packageVersion("stringr")`) [@stringr]
+
+-   *stringdist* (v`{r} utils::packageVersion("stringdist")`) [@stringdist]
+
+-   *memoise* (v`{r} utils::packageVersion("memoise")`) [@memoise]
+
+-   *parallel* (v`{r} utils::packageVersion("parallel")`) [@parallel]
+
+-   *furrr* (v`{r} utils::packageVersion("furrr")`) [@furrr]
+
+-   *progressr* (v`{r} utils::packageVersion("progressr")`) [@progressr]
+
+You can see for yourself in the matches table below (maybe I missed one?).
+
+```{r}
+#| label: retractions-function
+
+
+setup_parallel <- function(cores = NULL) {
+  # Check for cloud environments or system limitations
+  max_allowed_cores <- parallelly::availableCores()
+  
+  if (is.null(cores)) {
+    # Use 1 less than available, but respect system limits
+    cores <- min(parallel::detectCores() - 1, max_allowed_cores)
+    # Ensure at least 1 core is used
+    cores <- max(cores, 1)
+  } else {
+    # Make sure user-specified cores don't exceed limits
+    cores <- min(cores, max_allowed_cores)
+  }
+  
+  # Set up the future plan
+  future::plan(future::multisession, workers = cores)
+}
+
+# Create memoized helper functions with explicit namespace references
+mem_stringdist <- memoise::memoise(stringdist::stringdist)
+mem_str_detect <- memoise::memoise(stringr::str_detect)
+
+search_retractions_by_authors <- function(author_names, 
+                                        retraction_data, 
+                                        fuzzy_threshold = 0.2,
+                                        date_from = NULL,
+                                        date_to = NULL,
+                                        cores = NULL) {
+
+  # Initialize parallel processing
+  setup_parallel(cores)
+  
+  # Don't nest with_progress calls - move this outside if calling from another function
+  # that already uses with_progress
+  p <- progressr::progressor(steps = 4)
+  p(amount = 1, message = "Initializing...")
+  
+  # Convert author names to lowercase for case-insensitive matching
+  author_names_lower <- tolower(author_names)
+  
+  # Process retraction data
+  matching_retractions <- retraction_data %>%
+    # Convert dates to proper format - handle potential NA values
+    mutate(
+      RetractionDate = as.Date(RetractionDate, format = "%m/%d/%Y"),
+      OriginalPaperDate = as.Date(OriginalPaperDate, format = "%m/%d/%Y")
+    ) 
+  
+  # Apply date filters if provided (with error handling)
+  if (!is.null(date_from)) {
+    date_from_parsed <- try(as.Date(date_from), silent = TRUE)
+    if (!inherits(date_from_parsed, "try-error") && !is.na(date_from_parsed)) {
+      matching_retractions <- matching_retractions %>% 
+        filter(!is.na(RetractionDate) & RetractionDate >= date_from_parsed)
+    }
+  }
+  
+  if (!is.null(date_to)) {
+    date_to_parsed <- try(as.Date(date_to), silent = TRUE)
+    if (!inherits(date_to_parsed, "try-error") && !is.na(date_to_parsed)) {
+      matching_retractions <- matching_retractions %>% 
+        filter(!is.na(RetractionDate) & RetractionDate <= date_to_parsed)
+    }
+  }
+  
+  # Convert Author column to lowercase for matching
+  matching_retractions <- matching_retractions %>%
+    mutate(authors_lower = tolower(Author))
+  
+  p(amount = 1, message = "Processing data...")
+  
+  # Use safer versions of the string operations with error handling
+  matching_retractions <- matching_retractions %>%
+    mutate(
+      exact_matches = furrr::future_map_chr(
+        authors_lower,
+        function(author_string) {
+          if (is.na(author_string)) return("")
+          
+          matches <- author_names_lower[sapply(author_names_lower, function(name) {
+            stringr::str_detect(author_string, stringr::str_c("\\b", name, "\\b"))
+          })]
+          stringr::str_c(matches, collapse = "; ")
+        },
+        .options = furrr::furrr_options(seed = TRUE)
+      )
+    )
+  
+  p(amount = 1, message = "Performing exact matching...")
+  
+  # Perform fuzzy matching with error handling
+  matching_retractions <- matching_retractions %>%
+    mutate(
+      fuzzy_matches = furrr::future_map_chr(
+        authors_lower,
+        function(author_string) {
+          if (is.na(author_string)) return("")
+          
+          individual_authors <- stringr::str_split(author_string, ";")[[1]] %>%
+            stringr::str_trim()
+          
+          matches <- author_names_lower[sapply(author_names_lower, function(search_name) {
+            min_dist <- min(sapply(individual_authors, function(x) 
+              stringdist::stringdist(x, search_name, method = "jw")), na.rm = TRUE)
+            !is.na(min_dist) && min_dist <= fuzzy_threshold
+          })]
+          
+          stringr::str_c(unique(matches), collapse = "; ")
+        },
+        .options = furrr::furrr_options(seed = TRUE)
+      )
+    )
+  
+  p(amount = 1, message = "Performing fuzzy matching...")
+  
+  # Filter and select columns
+  results <- matching_retractions %>%
+    filter(exact_matches != "" | fuzzy_matches != "") %>%
+    select(
+      Title,
+      Author,
+      exact_matches,
+      fuzzy_matches,
+      Journal,
+      Publisher,
+      Country,
+      RetractionDate,
+      OriginalPaperDate,
+      RetractionDOI,
+      OriginalPaperDOI,
+      Reason,
+      everything(),
+      -authors_lower
+    )
+  
+  # Generate summary statistics with error handling
+  summary_stats <- list(
+    total_matches = nrow(results),
+    matches_by_year = results %>%
+      mutate(year = format(RetractionDate, "%Y")) %>%
+      count(year, name = "retractions") %>%
+      arrange(desc(year)),
+    matches_by_publisher = results %>%
+      count(Publisher, sort = TRUE, name = "retractions"),
+    matches_by_country = results %>%
+      count(Country, sort = TRUE, name = "retractions"),
+    exact_vs_fuzzy = c(
+      exact = sum(results$exact_matches != "", na.rm = TRUE),
+      fuzzy_only = sum(results$exact_matches == "" & results$fuzzy_matches != "", na.rm = TRUE)
+    ),
+    date_range = if(nrow(results) > 0) {
+      c(
+        min = min(results$RetractionDate, na.rm = TRUE),
+        max = max(results$RetractionDate, na.rm = TRUE)
+      )
+    } else {
+      c(min = NA, max = NA)
+    }
+  )
+  
+  # Return results
+  list(
+    matches = results,
+    summary = summary_stats
+  )
+}
+
+# Clear memoization cache function
+clear_retraction_search_cache <- function() {
+  memoise::forget(mem_stringdist)
+  memoise::forget(mem_str_detect)
+  gc()  # Run garbage collection
+}
+
+```
+
+Then pull out the search terms using *tidyverse.*
+
+```{r}
+#| label: retractions-author
+# Set up handlers for progress reporting
+
+handlers(handler_progress(
+  format = ":spin :current/:total (:message) [:bar] :percent in :elapsed ETA: :eta",
+  width = 100
+))
+
+# Extract just family names
+author_surnames <- TargetCitation$data$author[[1]] |>
+  pull(family)
+
+# Run the search with more error handling
+search_results <- tryCatch({
+  # Don't nest with_progress here since it's already used in the function
+  search_retractions_by_authors(
+    author_surnames,
+    Retractions,
+    fuzzy_threshold = 0.2, 
+    date_from = "2020-01-01",
+    date_to = "2024-12-31",
+    cores = 2  # Limit cores explicitly for Connect environment
+  )
+}, error = function(e) {
+  # Print the error
+  message("Error in search: ", e$message)
+  # Return empty results as fallback
+  list(
+    matches = tibble(),
+    summary = list(
+      total_matches = 0,
+      matches_by_year = tibble(year = character(0), retractions = integer(0)),
+      matches_by_publisher = tibble(Publisher = character(0), retractions = integer(0)),
+      matches_by_country = tibble(Country = character(0), retractions = integer(0)),
+      exact_vs_fuzzy = c(exact = 0, fuzzy_only = 0),
+      date_range = c(min = NA, max = NA)
+    )
+  )
+})
+
+# Access the results
+AuthorMatches <- search_results$matches
+summary_stats <- search_results$summary
+
+```
+
+Then present in a table using *gt* package (v`{r} utils::packageVersion("gt")`) [@gt].
+
+```{r}
+#| label: author-matches
+
+
+gt::gt(AuthorMatches |> dplyr::select(
+  Title,
+  Author,
+  Journal,
+  Country,
+  exact_matches,
+  fuzzy_matches,
+  RetractionDate
+)) |>
+  tab_options(
+    table.width = px(1200),  # Wider overall table
+    table.font.size = px(12)  # Slightly smaller font
+  ) |>
+  cols_width(
+    Title ~ px(200),          # Wider for full titles
+    Author ~ px(200),         # Space for multiple authors
+    Journal ~ px(200),        # Space for journal names
+    Country ~ px(150),        # Space for multiple countries
+    exact_matches ~ px(75),     # Wide space for institutions
+    fuzzy_matches ~ px(75),     # Wide space for institutions
+    RetractionDate ~ px(75)     # Wide space for institutions
+  ) |>
+  fmt_markdown(columns = everything()) |>
+  text_transform(
+    locations = cells_body(),
+    fn = function(x) {
+      vapply(x, function(x) {
+        if (is.character(x)) {
+          # Insert line breaks in long strings
+          gsub("([,;]) ", "\\1\n", x)
+        } else {
+          as.character(x)
+        }
+      }, character(1))
+    }
+  ) |>
+  tab_style(
+    style = cell_text(whitespace = "pre-wrap"),  # Preserve line breaks
+    locations = cells_body()
+  ) |>
+  cols_align(
+    align = "left",
+    columns = everything()
+  ) |>
+  knitr::knit_print()
+
+```
+
+# Open Science
+
+The open science movement was not even on the radar when this study was in its infancy, so I'm going to give the authors a pass on these items, but I'll include them for the next chapter of our series.
+
+## \[CONSORT 2\] Trial Registration
+
+First things first, this study is not a randomised trial. In the methods, it's described as a "prospective controlled trial". More on this topic later.
+
+No prior trial registration in [clinicaltrials.gov](clinicaltrials.gov). Manual search was performed 17-Feb-2025.
+
+## \[CONSORT 3\] Protocol and statistical analysis plan
+
+<!--# Where the full trial protocol and other relevant documents can be accessed, including additional data on harms -->
+
+This gets a little trickier. The protocol is not described fully in this paper, but is somewhat described throughout the multiple papers from the same study sample. As far as I can tell though, there was no protocol published prior to the first follow up paper.
+
+Study with follow up at 7 years - [@roe2005]
+
+Study with follow up at 5 years - [@pinczewski2002]
+
+Study with follow up at 2 years - [@corry1999]
+
+## \[CONSORT 4\] Data Sharing
+
+No data or other materials are shared for the target paper, or its associated study reports.
+
+## \[CONSORT 5\] Funding and conflicts of interest
+
+Funding provided by
+
+-   The Australian Institute of Musculoskeletal Research
+
+    -   A local not-for-profit entity to support research within a group of surgeons in which the senior author was a key influencer
+
+-   Smith and Nephew Endoscopy
+
+    -   Manufacturer of the fixation and surgical instrumentation for the ACL reconstruction procedures
+
+    -   Fund fellowships for less experienced surgeons to train under the senior author
+
+# Title and Abstract
+
+## CONSORT \[1a\] Trial Identification
+
+The title identifies the study as a "prospective controlled trial".
+
+## \[CONSORT \[1b\] Structured Abstract
+
+<!--# Structured summary of trial design, methods, results, and conclusions -->
+
+<!--# P1b: The PRO should be identified in the abstract as a primary or secondary outcome -->
+
+The patient-reported outcome measures (PROMs) used in the study are *not* identified in the abstract as primary or secondary outcomes in the trial.
+
+::: {#tbl-abstract}
++--------------------------------+-------------------+----------------------------------------------------------------------+
+| Item                           | Present \| Absent | Comments                                                             |
++================================+===================+======================================================================+
+| Title - identify as randomised | Absent            | Not applicable since the trial is partially randomised               |
++--------------------------------+-------------------+----------------------------------------------------------------------+
+| Trial design                   | Absent            | A more accurate description of the trial is absent from the abstract |
++--------------------------------+-------------------+----------------------------------------------------------------------+
+| Methods                        | Present           | Eligibility criteria for participants                                |
+|                                |                   |                                                                      |
+| -   Participants               | Present           | Primary outcome not defined                                          |
+|                                |                   |                                                                      |
+| -   Interventions              | Present           |                                                                      |
+|                                |                   |                                                                      |
+| -   Outcome                    | Not applicable    |                                                                      |
+|                                |                   |                                                                      |
+| -   Randomisation              | Absent            |                                                                      |
+|                                |                   |                                                                      |
+| -   Blinding                   |                   |                                                                      |
++--------------------------------+-------------------+----------------------------------------------------------------------+
+| Results                        | Not applicable    | The denominator in graft failure is inaccurate                       |
+|                                |                   |                                                                      |
+| -   Numbers randomised         | Absent            |                                                                      |
+|                                |                   |                                                                      |
+| -   Recruitment                | Absent            |                                                                      |
+|                                |                   |                                                                      |
+| -   Numbers analysed           | Present           |                                                                      |
+|                                |                   |                                                                      |
+| -   Outcome                    | Present           |                                                                      |
+|                                |                   |                                                                      |
+| -   Harms                      |                   |                                                                      |
++--------------------------------+-------------------+----------------------------------------------------------------------+
+| Conclusions                    | Present           |                                                                      |
++--------------------------------+-------------------+----------------------------------------------------------------------+
+| Trial registration             | Absent            |                                                                      |
++--------------------------------+-------------------+----------------------------------------------------------------------+
+| Funding                        | Absent            |                                                                      |
++--------------------------------+-------------------+----------------------------------------------------------------------+
+
+Summary of CONSORT Abstract Guidelines
+:::
+
+# Introduction
+
+## \[CONSORT 6\] Background and Rationale
+
+<!--# Including background and rationale for PRO assessment -->
+
+An important element of a clinical trial in this domain is to establish the *clinical equipoise* of the interventions and I dont think this was established here at all. In the present day, we have frameworks such as IDEAL [@McCulloch2009] that were developed specifically for the introduction of new surgical techniques and devices, that provide a graduated approach to preparing and supporting the concept of equipoise between the new and incumbent surgical treatments. While the introduction lays out different graft options for ACL reconstruction, it could have done more to establish the equivalent expectations of outcomes after graft selection. Importantly there is also no background or rationale stated for assessment of PROMs in general, nor the ones selected specifically.
+
+## CONSORT \[7\] Specific Objectives or Hypotheses
+
+<!--# Specific objectives or hypotheses for outcomes of benefits and harms -->
+
+<!--# P2b: The PRO hypothesis should be stated and relevant domains identified, if applicable -->
+
+The paper aim as stated;
+
+> *This study represents a report on the long-term outcomes of ACL reconstruction on knee function using an endoscopic technique, as well as a prospective comparison of the isolated effects of one extrinsic variable (graft choice).*
+
+Herein lies origin of many of the problems I have with this paper. It doesnt follow a *pico(s)* structure first introduced by [@thewell1995], with the *s* a more recent introduction [@liberati2009] representing the study design. Without a focused question following this structure, it becomes difficult to assess whether the trial is appropriately reported or adequately structured to address its primary aim. In addition, there are no specific objectives or hypotheses related to outcomes of benefits or harms (as per CONSORT Harms) and no mention of PROMs (as per CONSORT PRO extension).
+
+# Methods - External assessment
+
+This paper should have been put through the wringer by at least one systematic review and/or meta-analysis (SR-MA) of graft type in ACL reconstruction. Let's do a quick summary of what others have said about the methods through RoB or methodology assessments in previous reviews.
+
+First we'll filter down the citation list retrieved previously just for recent systematic reviews.
+
+```{r}
+
+CitationsSR <- Citations |> dplyr::filter(
+  stringr::str_detect(title,"(systematic.*review)|(meta.*analysis)")
+) |> dplyr::arrange(
+  year
+)
+```
+
+## Risk of Bias
+
+I hope you as a gentle reader will forgive a slightly less-than-rigourous process of retrieving relevant reviews here, but with code and data sources you will be empowered to go and replicate this investigation and publish a pointed rebuttal with new evidence. What I found in my reading was a recent review [@sollberger2022] that attempted to assess long term results after ACLR with PT vs HS autograft with a minimum follow up of 10 years, but did not include our target study in their analysis, largely as it didnt meet the randomisation criterion. Another review [@migliorini2020] included it in their quality assessment, but did not break down their RoB ratings by individual paper.
+
+One systematic review [@janssen2017] used the Cochrane library checklist for RCTs, with two reviewers conducting independent ratings. It's important to keep in mind that this checklist is not currently the recommended method for assessing risk of bias in RCTs (Cochrane chapter 8) [@Cumpston2019], but it does give us some idea of the methodological issues with this citation of interest, before we start our own review. The authors classified this trial as a *clinical controlled trial* (no formal randomisation). The overall rating from the combined checklist score was *Questionable (*score was between 30% and 50%). The citation of interest was marked down for the following items;
+
+-   Lack of randomisation
+
+-   Lack of blinding (patient, therapist, outcome assessor)
+
+-   Lack of intention-to-treat analysis
+
+While it was marked OK for an *acceptable lost-to-followup*, I think this is debatable and I will cover this in more detail later on.
+
+# Methods
+
+## \[CONSORT 8\] Patient and public involvement
+
+This area is one that is done poorly overall in this domain and I am not in a position to throw stones in this glasshouse. Historically we have designed trials in joint surgery without involvement of either stakeholder group for a host of reasons that could fill a separate post. For the purposes of our discussion here, I will summarise by saying that these stakeholders are not identified as contributing to any part of this study.
+
+## \[CONSORT 9\] Trial Design
+
+<!--# Include allocation ratio -->
+
+Prospective controlled trial.
+
+This term is usually reserved for randomised trials, which this is not in reality. This is really an interrupted cohort study, or an interrupted time series. Historical controls in randomised trials remain an emerging topic in trial methodology and the relevant methods were not well developed in the period that this study was designed, initial run and first analysed.
+
+## CONSORT \[10\] Changes to methods
+
+<!--# Important changes to the trial after it commenced including any outcomes or analyses that were not prespecified,with reason -->
+
+A key criticism of the target paper is that many of the analyses, while replicated from previous papers in the series, are not really pre-specified in the sense that we would use that term in the contemporary period. There have clearly been a number of decisions made about case inclusion into certain calculations. Further, changes to patient eligibility appeared to have been altered or been reinterpreted at some point after trial commencement for a number of sub-analyses. While these are detailed in the methods descriptions of the various papers, it remains unclear whether methods were changed for the target paper between the analysis plan and the reported findings.
+
+Outcome switching from trial plan - commencement to analysis and reporting is problematic in trials [@altman2017]. This is one of the key weaknesses of this work - the outcomes have been potentially switched from one paper to the next based on interest over time. With no firm primary outcome stated early on in the reporting process or pre-specified, it is entirely possible that reported outcomes have been prioritised based on i) altered levels of interest over time or ii) levels of significance at the time of comparison.
+
+## \[CONSORT 11\] Trial setting
+
+<!--# why is this important - retrieve from guidance and elaboration. "Information...is crucial to judge the applicability and generalisability of the trial. Other aspects...may also affect a study's external validity. -->
+
+A paper such as this, that finds itself interpreted as foundational knowledge within this domain, can often have its results interpreted beyond the scope of its original design. An important element to its future usage is how generalisable the findings are to other surgeons, health services, patient populations and communities. Information about the setting in which the surgeries took place and in what context the trial was conducted are important information to judge the applicability and generalisability of the trial [@hopewell2025].
+
+In the target paper, the description of the setting is mostly absent, so some detective work is required. The lead surgeon in the trial (LP) has been in private practice on the North Shore of Sydney since before the period the surgeries were performed. The rooms are located within the Mater Misericodiae hospital (part of the St Vincents network) at Crows Nest, Sydney, New South Wales, as part of one of the first multidisplinary practices (North Sydney Orthopaedic and Sports Medicine Centre established 1989) under the leadership of Dr Merv Cross. While the Mater had a [storied history](https://en.wikipedia.org/wiki/Mater_Hospital,_North_Sydney), it was re-opened in 1990 as a private hospital before being incorporated into St Vincents and Mater Health Sydney Limited in 2001. So during the period in which the surgeries occurred, the hospital was operating as a private hospital in an area considered to be the higher end of the socioeconomic spectrum in Australia at the time. The trial setting was conducted within the rooms of the senior surgeon, with patient recruitment occurring in rooms and ethical approval provided by the hospital in which the procedures were performed. The trial staff were employed directly by the senior surgeon.
+
+## \[CONSORT 12a\] Patient Eligibility
+
+<!--# Not PRO-specific, unless the PROs were used in eligibility or stratification criteria -->
+
+For ease of reference as I discuss the finer points of the criteria - here are they are recreated below.
+
+::: {#tbl-eligibility}
++-----------+---------------------------------------+--------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Category  | Inclusion                             | Exclusion                                                                                        | Comments                                                                                                                                                                                                                  |
++===========+=======================================+==================================================================================================+===========================================================================================================================================================================================================================+
+| Patient   | Desire return to competitive activity |                                                                                                  | This rules out many patient populations where this desire is diminished                                                                                                                                                   |
++-----------+---------------------------------------+--------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Pathology | Complete ACL rupture                  | Additional ligament injury such that reconstruction was deemed necessary                         | This rules out only a small proportion of cases considered "multiligament" usually involving the medial collateral ligament, in which injuries are usually treated non-operatively                                        |
++-----------+---------------------------------------+--------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|           | Grade 2 Lachman (or above)            | Chondral damage                                                                                  | Chondral damage is a low, but not zero incidence                                                                                                                                                                          |
++-----------+---------------------------------------+--------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|           | Positive pivot shift                  |                                                                                                  |                                                                                                                                                                                                                           |
++-----------+---------------------------------------+--------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Treatment |                                       | Meniscal damage such that meniscectomy of \>1/3 of one (medial or lateral) meniscus was required | This may be problematic when attempting to relate the findings to the contemporary clinical context as the criteria for repair and meniscectomy have evolved substantially                                                |
++-----------+---------------------------------------+--------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Other     | Failed nonoperative treatment         | Previous meniscectomy                                                                            | ACL rupture in cases with previous meniscal pathology is relatively rare, usually due to diminished activity levels in these patients                                                                                     |
++-----------+---------------------------------------+--------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|           |                                       | Abnormal radiographic image                                                                      |                                                                                                                                                                                                                           |
++-----------+---------------------------------------+--------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|           |                                       | Abnormal contralateral knee                                                                      |                                                                                                                                                                                                                           |
++-----------+---------------------------------------+--------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|           |                                       | Patients seeking compensation for their injury                                                   | Potentially restricts generalisability                                                                                                                                                                                    |
++-----------+---------------------------------------+--------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|           |                                       | Patients who did not wish to participate in a research program                                   | This could be somewhat problematic in terms of bias risk. Initially, patients may have declined to randomisation and been excluded. Later on, it would be patients that did not want to participate in outcomes retrieval |
++-----------+---------------------------------------+--------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+Summary of patient eligibility criteria in the target study
+:::
+
+<!--# The representativeness of the sample is questionable -->
+
+Yes, the representativeness of the sample is questionable for a number of reasons, as outlined in @tbl-eligibility. However, a trial of this type need not be representative, as the aims of a trial are to "Provide evidence for **relative** treatment effectiveness over an adequate time horizon for assessing target patient outcomes" ([Harrell, 2023](https://www.fharrell.com/post/rct-mimic/ "RCT generalisability")). Harrell goes on to note that knowledge of the relative effect from an RCT combined with the absolute risk of an outcome from observational data can be combined to assess individual treatment efficacy. Others have observed that treatment effects can remain the same even when trial participants differ from the target population [@bradburn2020], this needs to be replicated in our present context here though. Still others have argued against the ingrained notion in clinical science that representative patient samples are the only mechanism by which findings can be appropriately generalised [@rothman2013].
+
+The authors *have* mentioned that the trial can be used to establish a baseline of outcomes in this population, and I think this an overreach given the limitations on its external validity.
+
+## \[CONSORT 12b\] Patient Eligibility
+
+<!--# When applicable, eligibility criteria for centers and for care providers -->
+
+This study is a single-centre and single-surgeon investigation (also investigator-led), therefore eligibility criteria for centres and care providers is not applicable.
+
+## \[CONSORT 13\] Intervention and comparator
+
+<!--# Intervention and comparator with sufficient details to allow replication. If relevant, where additional materials describing the intervention and comparator (eg, intervention manual) can be accessed -->
+
+The intervention is arthroscopic reconstruction of the anterior cruciate ligament using autograft (material retrieved from the patient) during the operation and it is described the most in [@pinczewski2002]. There are numerous elements to the surgery that can vary;
+
+-   Graft retrieval (addressing the defect)
+
+-   Graft preparation (steps to convert the tendon graft into a structure that broadly matches the dimensions of the original ligament)
+
+-   Arthroscopy portal placement
+
+-   Tunnel placement (tibia and femur; where the ends of the prepared graft will be fixed)
+
+-   Graft fixation (technique and hardware)
+
+-   Closure
+
+An important element of surgical outcomes in this context is the short-term rehabilitation approach. In the context of 10-year followup, the influence of rehabilitation might be relatively indirect on outcomes, or certainly weakened compared to earlier follow ups.
+
+The major differences in intervention, which has implications for the ability to blind group allocation, was the graft retrieval. One group had graft material retrieved from the front of the knee, and the other group from the back of the knee. Importantly, one technique required bone grafting (PT group), which impacted the recommendations for weightbearing and short-term activity restrictions. Ultimately, these differences contributed to the randomisation aspect of the trial being abandoned (see Methods - Randomisation).
+
+## \[CONSORT 14\] Outcomes
+
+<!--# Prespecified primary and secondary outcomes, including the specific measurement variable (eg, systolic blood pressure), analysis metric (eg, change from baseline, final value, time to event), method of aggregation (eg, median, proportion), and time point for each outcome -->
+
+Primary and secondary outcomes were not specified in any of the trial reports. I have tabled up the outcomes for clarity and bolded the outcomes that could be considered as primary outcomes.
+
+::: {#tbl-outcomes}
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+| Category            | Outcome                                     | Type          | Comments                                                                   |
++=====================+=============================================+===============+============================================================================+
+| Adverse Events      | **Ipsilateral graft intact**                | Binary;       |                                                                            |
+|                     |                                             |               |                                                                            |
+|                     |                                             | Time to event |                                                                            |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+|                     | Contralateral ligament intact               | Binary;       |                                                                            |
+|                     |                                             |               |                                                                            |
+|                     |                                             | Time to event |                                                                            |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+|                     | Ipsilateral adverse events (complications)  | Binary        |                                                                            |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+|                     | Ipsilateral further surgery                 | Binary        |                                                                            |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+|                     | Harvest site symptoms                       | Ordinal       |                                                                            |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+| Subjective symptoms | **Symptoms with strenuous activity (IKDC)** | Ordinal       | [@hefti1993]                                                               |
+|                     |                                             |               |                                                                            |
+|                     |                                             |               | Person completing with patient - practice physiotherapist                  |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+|                     | Lysholm Knee Score                          | Continuous    | [@tegner1985]                                                              |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+|                     | Sports participation                        | Binary        |                                                                            |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+|                     | Knee-related reduction in activity          | Binary        |                                                                            |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+|                     | Kneeling pain                               | Continuous    |                                                                            |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+| Objective testing   | **Lachman Grade**                           | Ordinal       |                                                                            |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+|                     | Pivot Shift                                 | Ordinal       |                                                                            |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+|                     | Instrumented Laxity                         | Binary        |                                                                            |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+| Radiographic        | X-ray grading                               | Ordinal       | IKDC guidelines for radiographic assessment [@hefti1993]                   |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+| Composite Endpoint  | *Ideal* Ouctome                             | Binary        | Combination of IKDC Grade A and no evidence of radiographic osteoarthritis |
++---------------------+---------------------------------------------+---------------+----------------------------------------------------------------------------+
+
+Summary of outcomes in target paper
+:::
+
+The inclusion of paediatric patients in the sample (see CONSORT XX) raises issues of validity with respect to the PROMs utilised. Granted, the IKDC version used is the original and not the IKDC2000 used more broadly after the turn of the century. The IKDC2000, in which the subjective knee score component is based largely on the same questions as the version used in this study, is not validated for paediatric patients. In their defence, the paediatric version of the IKDC2000 would not be published for another decade [@nasreddine2016] after publication and some quarter century after the surgeries. However, It is also contended that the Lysholm is not validated for paediatric populations either [@fabricant2020]. The IKDC was collected in person and facilitated by a physiotherapist during an in-clinic visit. It is not stated, but I presume the "self-administered" Lysholm scale was completed during the same visit. Interestingly, there is no mention of following up patients by phone for PROMs.
+
+## \[CONSORT 15\] Harms
+
+<!--# Describe if and how non-prespecified outcomes of benefits and harms were identified, including any selection criteria, if applicable -->
+
+The description of harms is an area of weakness of reporting in this series of papers and particularly with the target paper. There is limited structure to the detection, measurement or interpretation of harms reported. There is no description of how harms (complications) were defined in general, or with specific reference to any one harm category. With the benefit of hindsight, it is clear that the incidence and progression of complications after ACL reconstruction is more complex than reported in this paper. More recent assessments of complications after ACLR [@rousseau2019] suggest that a more structured approach to assessment, particularly over such a long follow up is required. Importantly, the harms associated with the reconstruction procedure also have a confounding effect on ipsilateral and contralateral rerupture risk, more on that later.
+
+## \[CONSORT 16a\] Sample size determination
+
+This is the biggest mystery of this paper I think. The methods description is very clear about what the sample size is, but really nothing about how it was determined. The only mention of power is in the discussion of [@pinczewski2002] to say that the study is underpowered for detecting a difference in graft rupture incidence.
+
+I will run some simulations below to prove the point, but I just dont think this study was adequately powered for any of the comparisons it has made between the groups.
+
+Determination of the required sample size has not been described in this paper or any others in the series. I will focus this report on a quick assessment of the estimated power for a couple of comparisons.
+
+### Sample for IDEAL outcome comparison
+
+I'm going to start with the *IDEAL* *outcome* (see CONSORT 14) and assess the achieved power. I created the datatable of groupings directly using the numbers described in Table 5 of the target paper. This *should* be the floor sample sizes available, given the availability of assessment data for both groups. Ran a quick check to make sure the numbers came across ok.
+
+But then when I tried to recreate the outcome vector, I was convinced I was going mad - as I couldnt get the proportions to replicate what was in the paper. I spent ages fiddling around with rounding the proportions to no avail, so here is the original reporting with code below.
+
+```{r}
+#| label: tbl-sim-outcome1
+#| tbl-cap: "Estimated outcome incidence rates for IDEAl outcome in simulated data"
+
+dt1 <- genData(1110)
+
+dt1$Graft <- c(rep(0, 580), rep(1, 530))
+
+set.seed(2065)
+# Define the conditions
+defC <- defCondition(
+  condition = "Graft == 0",
+  formula = 0.689655,
+  dist = "binary",
+  link = "identity"
+                    )
+defC <- defCondition(
+  defC, 
+  condition = "Graft == 1",
+  formula = 0.471698,
+  dist = "binary",
+  link = "identity"
+                    )
+
+# Generate the outcome based on conditions
+dt2 <- addCondition(defC, dt1, newvar = "outcome")
+
+# Verify the rates
+dt2[, mean(outcome), by = Graft] |> gt::gt() |> fmt_number(columns = V1, decimals = 3)
+
+```
+
+```{epoxy}
+
+Eventually, I had to resort to a manual back-calculation combined with rounding to estimate the positive cases in the HT group (n = {round(0.69*58,0)}) and the PT group (n = {round(0.47*53, 0)}).
+
+```
+
+Plugging those numbers in, the dataframe could be replicated.
+
+```{r}
+#| label: tbl-sim-outcome2
+#| tbl-cap: "Refined estimates of outcome incidence rates for IDEAl outcome in simulated data"
+
+
+set.seed(2065)
+
+# Create base data frame
+IdealSim <- data.frame(id = 1:111)
+
+# First assign the Graft variable
+IdealSim$Graft <- c(rep(0, 58), rep(1, 53))
+
+# Then assign outcomes separately for each group
+IdealSim$Outcome <- NA  # Initialize with NA
+IdealSim$Outcome[IdealSim$Graft == 0] <- c(rep(0, 18), rep(1, 40))
+IdealSim$Outcome[IdealSim$Graft == 1] <- c(rep(0, 28), rep(1, 25))
+
+IdealSim %>%
+  group_by(Graft) %>%
+  summarize(Proportion = mean(Outcome)*100) |> gt::gt() |> fmt_number(columns = Proportion, decimals = 2)
+```
+
+Write a function to simulate the *same* between-group test.
+
+```{r}
+
+# Function to run 1000 Wilcoxon tests on simulated data
+run_wilcoxon_simulation <- function(data, outcome_var, group_var, n_sims = 1000, alpha = 0.05) {
+  # Input validation
+  if (!is.data.frame(data)) {
+    stop("Input must be a data frame")
+  }
+  
+  if (!(outcome_var %in% names(data))) {
+    stop(paste("Variable", outcome_var, "not found in data"))
+  }
+  
+  if (!(group_var %in% names(data))) {
+    stop(paste("Variable", group_var, "not found in data"))
+  }
+  
+  # Create formula
+  formula_str <- paste(outcome_var, "~", group_var)
+  test_formula <- as.formula(formula_str)
+  
+  # Initialize results storage
+  results <- data.frame(
+    sim_id = 1:n_sims,
+    w_stat = numeric(n_sims),
+    p_value = numeric(n_sims),
+    significant = logical(n_sims)
+  )
+  
+  # Set seed for reproducibility
+  set.seed(2065)
+  
+  # Get unique groups and sample sizes for bootstrap
+  unique_groups <- unique(data[[group_var]])
+  if (length(unique_groups) != 2) {
+    warning("Group variable should have exactly 2 levels for Wilcoxon test")
+  }
+  
+  group1_data <- data[data[[group_var]] == unique_groups[1], ]
+  group2_data <- data[data[[group_var]] == unique_groups[2], ]
+  
+  n1 <- nrow(group1_data)
+  n2 <- nrow(group2_data)
+  
+  # Run simulations
+  for (i in 1:n_sims) {
+    # Create bootstrap samples by sampling with replacement
+    bootstrap_sample1 <- group1_data[sample(1:n1, n1, replace = TRUE), ]
+    bootstrap_sample2 <- group2_data[sample(1:n2, n2, replace = TRUE), ]
+    
+    # Combine the samples
+    bootstrap_data <- rbind(bootstrap_sample1, bootstrap_sample2)
+    
+    # Run the Wilcoxon test
+    test_result <- wilcox.test(test_formula, data = bootstrap_data)
+    
+    # Store results
+    results$w_stat[i] <- test_result$statistic
+    results$p_value[i] <- test_result$p.value
+    results$significant[i] <- test_result$p.value < alpha
+  }
+  
+  # Add summary statistics
+  attr(results, "summary") <- list(
+    mean_w_stat = mean(results$w_stat),
+    median_w_stat = median(results$w_stat),
+    mean_p_value = mean(results$p_value),
+    median_p_value = median(results$p_value),
+    significant_proportion = mean(results$significant),
+    power = sum(results$significant) / n_sims
+  )
+  
+  return(results)
+}
+```
+
+Run the simulations and plot the results.
+
+```{r}
+#| label: wilcoxon-simulation1
+
+# Run 1000 Wilcoxon tests
+IdealTest <- run_wilcoxon_simulation(
+  data = IdealSim,
+  outcome_var = "Outcome",
+  group_var = "Graft",
+  n_sims = 1000
+)
+```
+
+```{r}
+#| label: tbl-wilc-summary
+#| tbl-cap: "Summary of 1000 wilcoxon tests on simulated IDEAL outcome data between two groups"
+
+TableWilcSim <- tbl_summary(
+  IdealTest,
+  include = !sim_id,
+  digits = list(
+    all_categorical() ~ 1
+  ))
+
+knitr::knit_print(TableWilcSim)
+
+```
+
+```{epoxy}
+
+The proportion of tests with a p-value < 0.05 was {nrow(IdealTest |> filter(p_value < 0.05))/1000}. 
+
+```
+
+### Sample for time to event (Graft Failure)
+
+Next, we'll turn our attention to the time to event analysis of graft rupture.
+
+First - simulate a time to event dataset based on the reported findings.
+
+```{epoxy}
+
+The 10 year survival was 86% (95%CI 79 - 94) for the HT group and 92% (95%CI 86 - 98) for the PT group. This produces a hazard ratio of {round(92/86, 2)}. The PT group had (3, 1, 3) ipsilateral failures at up to 5 years, 5 to 7 years and 7 to 10 year follow up periods respectively. The HT group had (7, 2, 3) ipsilateral failures over the same intervals. 
+
+```
+
+I wrote a (fairly lengthy) function to simulate the dataset and re-plot the survival curves using *survival* (v`{r} utils::packageVersion("survival")`) [@survival] and *ggsurvfit* (v`{r} utils::packageVersion("ggsurvfit")`) [@ggsurvfit] packages.
+
+```{r}
+#| label: surv-simulation
+
+set.seed(2065)
+
+# Function to generate survival times for a group based on specified failure patterns
+generate_group_data <- function(n_subjects, failures_by_period, periods) {
+  # Initialize all subjects as censored at 10 years
+  data <- data.frame(
+    time = rep(10, n_subjects),
+    status = rep(0, n_subjects)
+  )
+  
+  # Total failures to distribute
+  n_failures <- sum(failures_by_period)
+  
+  # Randomly select subjects who will fail
+  fail_indices <- sample(1:n_subjects, n_failures)
+  
+  # Current position in fail_indices
+  current_pos <- 1
+  
+  # Distribute failures across time periods
+  for(i in 1:length(failures_by_period)) {
+    if(failures_by_period[i] > 0) {
+      # Get indices for this period's failures
+      period_indices <- fail_indices[current_pos:(current_pos + failures_by_period[i] - 1)]
+      
+      # Generate random times within this period
+      period_start <- if(i == 1) 0 else periods[i-1]
+      period_end <- periods[i]
+      
+      # Assign failure times
+      data$time[period_indices] <- runif(failures_by_period[i], 
+                                       min = period_start, 
+                                       max = period_end)
+      data$status[period_indices] <- 1
+      
+      # Update position
+      current_pos <- current_pos + failures_by_period[i]
+    }
+  }
+  
+  return(data)
+}
+
+# Define study parameters
+n_pt <- 90
+n_ht <- 90
+periods <- c(5, 7, 10)
+
+# Generate PT group data (3, 1, 3 failures in the periods)
+pt_data <- generate_group_data(n_pt, c(3, 1, 3), periods)
+pt_data$group <- "PT"
+
+# Generate HT group data (7, 2, 3 failures in the periods)
+ht_data <- generate_group_data(n_ht, c(7, 2, 3), periods)
+ht_data$group <- "HT"
+
+# Combine datasets
+dt <- rbind(pt_data, ht_data)
+dt$group <- factor(dt$group)
+
+# Create survival object
+Graftfit <- survival::survfit(Surv(time, status) ~ group, data = dt)
+
+# Create plotting data frame
+surv_df <- data.frame(
+  time = Graftfit$time,
+  surv = Graftfit$surv,
+  lower = Graftfit$lower,
+  upper = Graftfit$upper,
+  group = rep(names(Graftfit$strata), Graftfit$strata)
+)
+
+```
+
+```{r}
+#| label: fig-survsim
+#| fig-cap: "Simulated survival (Kaplan-Meier) curves for ipsilateral graft after reconstruction with different harvest material"
+
+
+# Create plot
+SurvPlot <- ggsurvfit::ggsurvfit(Graftfit) +
+  geom_step(data = surv_df, aes(x = time, y = surv, color = group), linewidth = 1) +
+  geom_ribbon(data = surv_df, 
+             aes(x = time, ymin = lower, ymax = upper, fill = group), 
+             alpha = 0.2) +
+  labs(x = "Time (years)", 
+       y = "Survival Probability", 
+       title = "Recreated Survival Curves",
+       color = "Group",
+       fill = "Group") +
+  theme_minimal() +
+  scale_y_continuous(limits = c(0.75, 1)) +
+  scale_color_manual(values = c("group=HT" = "#E41A1C", "group=PT" = "#377EB8"),
+                    labels = c("HT", "PT")) +
+  scale_fill_manual(values = c("group=HT" = "#E41A1C", "group=PT" = "#377EB8"),
+                    labels = c("HT", "PT")) +
+  add_risktable()
+
+knitr::knit_print(SurvPlot)
+```
+
+Let's double check I've got the right survival figures at the 10 year mark using gtsummary (v{r} utils::packageVersion("gtsummary"))[@gtsummary].
+
+```{r}
+#| label: tbl-survsim-sum
+#| tbl-cap: "Summary of case survival separated by graft material groups"
+
+SurvSum <- gtsummary::tbl_survfit(
+  Graftfit,
+  times = c(5,7,10)
+)
+
+knitr::knit_print(SurvSum)
+
+```
+
+I'm going to calculate the achieved power with a cox regression and the powerSurvEpi package {r} utils::packageVersion("gtsummary")) [@powerSurvEpi].
+
+```{r}
+SurvDT <- dt |> dplyr::mutate(
+  group = if_else(group == "PT", "C","E")
+  )
+
+SurvPowerChk <- powerSurvEpi::powerCT(
+  Surv(time, status) ~ group,
+	SurvDT,
+	90,
+	90,
+	1.07,
+	alpha = 0.05)
+```
+
+```{epoxy}
+#| label: text-survpower
+
+The achieved power for the survival analysis was {round(SurvPowerChk$power, 2)}.
+
+```
+
+```{r}
+#| label: fig-survcox
+#| fig-cap: "Check for proportional hazards of coxph model of simulated outcome data"
+GraftCox <- survival::coxph(
+  Surv(time, status) ~ group,
+  SurvDT
+)
+
+
+Graftzph <- survival::cox.zph(fit = GraftCox, transform="km", terms=TRUE, singledf=FALSE, global=TRUE)
+
+knitr::knit_print(Graftzph)
+```
+
+Overall, the simulation results indicate that the analyses as described, may have been underpowered for the intended comparisons. Of course, there are ways of making the comparisons more efficient by using more realistic models. For now, we'll leave the potential for alternate analyses as a setup for the next chapter.
+
+## \[CONSORT 16b\] Interim analyses and stopping
+
+No provision for stopping the trial has been described.
+
+## \[CONSORT 17a - 19\] Randomisation
+
+This was an attempted RCT that failed due to recruitment refusal.\
+\
+"*On October 28, 1993, we began a prospective randomized study of consenting patients who met the required criteria. However, by April 10, 1994, although 52 patients had been randomized, no further patients agreed to participate in randomization. This was because the patients were noticing, through comments from the physical therapist, that the use of hamstring tendon graft led to a more rapid recovery from surgery.*" [@pinczewski2002]
+
+## \[CONSORT 20\] Blinding
+
+<!--# Who was blinded after assignment to interventions (eg, participants, care providers, outcome assessors, data analysts) -->
+
+<!--# If blinded, how blinding was achieved and description of the similarity of interventions -->
+
+There is no mention of blinding in any of the articles related to this trial. Even if randomisation didn't occur, blinding of everyone involved in the trial (as much as practicable), but particularly those responsible for measurement and analysis is crucial to mitigate potential biases.
+
+## \[CONSORT 21a - 21d\] Statistical Methods
+
+The analysis description in this paper, definitively comparing graft types in ACLR reconstruction, is a total of four sentences. I just don't think this would (or should) pass muster in the contemporary period.
+
+The data structure clearly has dependency within patients over time points, but is likely under-sampled to cater for a fully specified model (mixed effects). See *Sample Size.*
+
+Let's breakdown each sentence;
+
+*The outcomes were compared between the two groups at 10 years using the Mann-Whitney U test for the continuous measurements (KT1000, range of motion, Lysholm score) and ordered categorical variables (such as IKDC categories).*
+
+Well, this is a cracking start - theoretically an MW U test can be applied to ordinal categorical responses, but gee-whiz, there are better approaches to use, particularly in this context. First of all, how were ties between groups corrected for? I suspect they werent and that means for a study that was probably already on the limits of power for the implied comparisons, using this test in this way chips away at what little power remained. Also, many of the variables are binary responses, which this test really wouldnt be appropriate for.
+
+Second, "at 10 years" is a bit misleading, as comparisons at the earlier time points are also made in this paper, as well as previous papers in this series.
+
+*Wilcoxon signed rank test was used to assess changes* *over time.*
+
+Combining t-tests like this for within and between-group comparisons is quite the sign that a more comprehensive model should be employed here.
+
+*Statistical significance was assessed at the 5% level.*
+
+While this is good to know, there are lots of other details we need before we get to this.
+
+But what's missing from the description of the statistical methods? It's hard to judge without some definitive questions and hypotheses. But the CONSORT statement [@hopewell2025] outlines some components that should be reported as a minimum;
+
+-   Definitions of who is included in each analysis - this has been described ad-hoc through the results of all the papers in the series, including our target paper
+
+-   How missing data were handled - this component has not been fully described or comprehensively dealt with. But in the authors defence, many of the contemporary methods for handling missing data were only recently developed or applied to the trial setting. For the most part, we can infer that complete case analysis has been utilised to address missingness, but this is not described in the methods section.
+
+-   Methods for additional analyses (subgroup and sensitivity) - also not described in any discernible detail. This may have been an opportunity to expand the trial indications
+
+# Results
+
+## \[CONSORT 22a\] Participant flow
+
+<!--# For each group, the numbers of participants who were randomly assigned, received intended treatment, and were analysed for outcomes of benefits and harms -->
+
+<!--# The number of PRO outcome data at baseline and at subsequent time points should be made transparent -->
+
+Some general comments are;
+
+-   The participant flow is explained in text, but this would be so much easier to understand with a flow chart. Especially trying to understand who was eligible for which outcomes at which follow up. I assume they didnt ask graft failure patients to be included at the post-failure timepoints for example.
+
+-   There is clearly a concerted effort to retrieve patients (in some form) at 5 years, compared to the 4 year followup (Table 1 [@pinczewski2002]).
+
+-   There is a risk of survivor bias in the PROMs assessment at 10 years with \~25% of cases failed by then. What would happen if a comparison were made based on ITT?
+
+-   The followup of patients at the final timepoint is noted in the follow-up section. This could be communicated more effectively with a comprehensive flowchart incorporating all published timepoints.
+
+## \[CONSORT 22b\] Losses and exclusions per group
+
+<!--# For each group, losses and exclusions after randomisation, together with reasons -->
+
+This is done reasonably well, but see comments above with respect to differentiating eligibility of different outcome measures.
+
+## \[CONSORT 23a\] Dates of recruitment and followup
+
+<!--# Dates defining the periods of recruitment and follow-up -->
+
+PT Group was operated on between Jan-1993 to Apr-1994 and the HT Group between Oct-93 to Nov-1994. The authors state "senior author...after Apr-1994..used the HT graft exclusively". Does this comparison not include the learning curve for HT? Why not start recruitment of HT group after Apr-1994?
+
+The specific followup dates are not included in any of the trial papers - this is particularly important for interpreting the PROMs.
+
+## \[CONSORT 23b\] Reasons for stopping
+
+Not explicitly stated in the text, but assumed to be reaching the sample target with sufficient followup. However, there is a section in [@pinczewski2002] talking about abandoning the randomised trial element due to recruitment failure (see *Randomisation*).
+
+## \[CONSORT 24a\] Intervention and comparator delivery
+
+As a surgical trial - this item is not that controversial. The lead surgeon performed the surgeries for both groups. There is no indication that any cases failed to receive the intended procedure.
+
+## \[CONSORT 24b\] Concomitant care
+
+All patients were offered a standardised rehabilitation protocol commencing immediately after surgery, but no data on patient adherence or activity progression is presented. There is also no data on additional care or medical intervention(s) received by any patients during this period.
+
+## \[CONSORT 25\] Baseline Data
+
+<!--# A table showing baseline demographic and clinical characteristics for each group -->
+
+<!--# Including baseline PRO data when collected -->
+
+There is no table of demographics in this paper, but there is in [@roe2005] for the same study sample. In addition, no baseline PROMs were collected for this study. If you've made it this far through the report, you are probably wondering when we are going to get to the forensic appraisal of the paper as per [@heathers2025]. Well now that we have actual data to address in the CONSORT checklist, we will take a swing at this point.
+
+Let's start with a quick rehash of the key data reported in the paper.
+
+::: {#tbl-baseline}
+| Parameter    | PT  | HT  |
+|--------------|-----|-----|
+| Females (n)  | 42  | 43  |
+| Age (median) | 25  | 24  |
+| Age (min)    | 13  | 13  |
+| Age (max)    | 42  | 52  |
+
+Summary of key demographics separated by group
+:::
+
+### Age
+
+Well, first of all - I'm not sure this would pass HREC in the present day. ACL reconstruction in skeletally immature individuals within a trial setting is a different set of ethical considerations to adults and I'm not sure a mixed sample like this would pass muster in the present environment (assuming there was genuine uncertainty in the best surgical approach). Considering the narrowness of the inclusion criteria, adding in immature patients into the sample is an interesting choice. The inclusion of paediatric patients also raises issues for the validity of the PROMs included in the outcomes (see CONSORT 14).
+
+The other question that comes to mind is what are the chances that two groups separated by a cutoff in time, would have the exact same average age? That is difficult to answer without knowing more about the i) the underlying age distribution of the clinic population and ii) the selected samples distributions. Seeing that a median and range is reported, I assume that the data was skewed (to lower ages). The other thing I notice is that the recruitment period is slightly different between groups, so it is definitely plausible that two similarly aged groups could be derived from the practice flow.
+
+Let's see what happens when we try to simulate a normal distribution of age in both groups. I'll use the *rsprite2* package (v`{r} utils::packageVersion("rsprite2")`) [@rsprite2] to generate plausible distributions.
+
+The first problem is that the median (50th percentile) for the either group is nowhere near the midpoint of the range `{r} 13 + ((42-13)/2)` reported. So what to use as the estimated mean? Let's first try with [@wan2014] equation 3 and for the SD (standard deviation) we'll use equation 9 from the same paper.
+
+```{r}
+#| label: age-simulation
+
+AgeMeanPT <- (13 + (2*25) + 42)/4
+
+```
+
+The SD is a bit more complicated so I'll need a function to implement the equation.
+
+```{r}
+#| label: sd-estimator
+
+estimate_sd_from_range <- function(min_val, max_val, n) {
+  # min_val: minimum value (a)
+  # max_val: maximum value (b)
+  # n: sample size
+  
+  # Calculate the range
+  range_val <- max_val - min_val
+  
+  # Calculate the denominator using the inverse normal CDF
+  denominator <- 2 * qnorm((n - 0.375) / (n + 0.25))
+  
+  # Estimate the standard deviation
+  sd_estimate <- range_val / denominator
+  
+  return(sd_estimate)
+}
+
+```
+
+Now I'll implement the function on the PT group parameters and see where we end up.
+
+```{r}
+#| label: sd-estimate-PT
+
+AgeSDPT <- estimate_sd_from_range(min_val = 13, max_val = 42, n = 90)
+```
+
+```{epoxy}
+
+So now for the PT group we have an estimated mean of {round(AgeMeanPT,3)} and SD of {round(AgeSDPT,2)}.
+
+```
+
+When plugged into the *rsprite2* functions gives an error that *the mean is not consistent with number of observations (fails GRIM test).*
+
+```{r}
+#| label: grim-test-age
+
+rsprite2::GRIM_test(
+  mean = AgeMeanPT,
+  n_obs = 90,
+  m_prec = 3,
+  return_values = TRUE
+)
+
+```
+
+I'm going to cut ourselves a bit of slack here - the difference is small enough to be a rounding error and can be attributed to making some fairly strong assumptions about the distribution, which remains somewhat of a mystery.
+
+The standard deviation needed a bit of tweaking to pass the GRIMMER test. The value that passed was 5.855.
+
+```{r}
+#| label: grimmer-sd-age
+
+rsprite2::GRIMMER_test(
+  mean = 26.244,
+  sd = 5.855,
+  n_obs = 90,
+  m_prec = 3,
+  sd_prec = 3,
+  n_items = 1,
+  min_val = 13,
+  max_val = 42
+)
+```
+
+Plugging the modified mean and sd for age back into the functions gives a pretty diverse range of possible distributions.
+
+```{r}
+#| label: fig-rsprite-age
+#| fig-cap: "Possible distributions for age at surgery for the PT group, simulated from summary data"
+
+AgeDistPT_Param <- rsprite2::set_parameters(
+  mean = 26.244, 
+  sd = 5.855, 
+  n_obs = 90, 
+  min_val = 13,
+  max_val = 42
+  )
+
+AgeDistPT <- rsprite2::find_possible_distributions(
+  parameters = AgeDistPT_Param, 
+  n_distributions = 10, 
+  return_tibble = TRUE
+  )
+
+rsprite2::plot_distributions(
+  distributions = AgeDistPT,
+  plot_type = "histogram"
+  )
+```
+
+So I still have questions about the age distribution as the proposed distributions (\@fig-rsprite-age) dont really fit the estimated parameters (no values near 40 for example, when the reported maximum is 42). I suspect the HT group will be even more deviant from the estimates as the range is wider (max out to 52). At this stage, the age distributions remain a mystery.
+
+### Sex
+
+I also wanted to know if the proportion of females is generalisable, so I established the female proportion in both study groups combined (they are also the same between groups), compared with the New Zealand ACL Registry data in the latest report [@aclregistry2024]. First I'll calculate the overall proportion from both groups combined in the target study to compare to the overall proportion reported by the registry.
+
+```{r}
+
+SexCheck <- list(
+  Group = prop.test(42 + 43, 180, 0.95),
+  NZRegistry = prop.test(8816,8816+11581,conf.level = 0.95)
+)
+```
+
+```{epoxy}
+
+A quick GRIM check of the female proportion returns [{scrutiny::grim(as.character(SexCheck$Group$estimate*100), n = 180, percent = TRUE)}] 
+```
+
+```{epoxy}
+
+The proportion of females in the selected study {round(SexCheck$Group$estimate,2)} ({round(SexCheck$Group$conf.int[1],2)}, {round(SexCheck$Group$conf.int[2],2)}) is higher by {(round(SexCheck$Group$estimate,2) - round(SexCheck$NZRegistry$estimate,2)) * 100}% than the NZ ACL Registry {round(SexCheck$NZRegistry$estimate,2)} ({round(SexCheck$NZRegistry$conf.int[1],2)}, {round(SexCheck$NZRegistry$conf.int[2],2)})
+
+```
+
+So it could be argued that the sex distribution in the target study is reasonably generalisable to the broader population and is internally consistent given the sample.
+
+## \[CONSORT 26\] Numbers analysed, outcomes and estimation
+
+<!--# For each primary and secondary outcome, by group: the number of participants included in the analysis the number of participants with available data at the outcome time point result for each group, and the estimated effect size and its precision (such as 95% confidence interval) for binary outcomes, presentation of both absolute and relative effect size -->
+
+The numbers get tricky depending on which outcome category we are talking about in this paper. Broadly they can be broken down into whether the patient was;
+
+-   Contactable by phone
+
+-   Willing and able to undergo a followup x-ray
+
+-   Available to return to clinic for assessment
+
+As far as is interpretable, the analysis is by original assigned groups throughout.
+
+What is of concern is the mixing of patient groups and eligibility criteria for analyses with respect to different outcomes. This has been outlined in the text of the paper and highlights varying criteria from one followup to the next (and the respective reporting) around objective and subjective outcomes for patients with ipsilateral or contralateral ligament/graft rupture. This makes tracing the numbers analysed from one paper in the series to the next extremely challenging.
+
+### Results for group
+
+<!--# For binary outcomes, presentation of both absolute and relative effect sizes is recommended -->
+
+Relative effect sizes (with confidence intervals) are not reported in this trial.
+
+Overall, the paper reports benefits and harms for each group, but *doesnt* report the between-group effect size or its precision (confidence intervals), nor does it report relative effect sizes for binary outcomes. Let's try out some checks -see how far we get. Let's use *statcheck* package first, see if we can get a bite.
+
+```{r}
+#| label: statcheck-paper
+#| execute: true
+
+ResultsText <- list(
+  GraftRupture = "There was no significant difference between the HT
+and PT groups in the rate of ACL graft rupture (P = .24)"
+  
+)
+
+statcheck::statcheck(
+  texts = ResultsText$GraftRupture,
+  stat = "t"
+  )
+```
+
+This is not surprising - the results are not formatted in APA style (not unusual for the field). Overall, the paper reports benefits and harms for each group, but *doesnt* report the between-group effect size or its precision (confidence intervals). In the interests of thoroughness, I'll repeat the scrutiny checks on the primary outcome (graft rupture).
+
+Firstly, I check what grim tests say about the reported incidence of rupture in both groups.
+
+```{epoxy}
+
+A quick GRIM check of the PT rupture proportion returns [{scrutiny::grim(as.character((7/90)*100), n = 90, percent = TRUE)}].
+
+For the HT rupture proportion, the test also returns [{scrutiny::grim(as.character((12/90)*100), n = 90, percent = TRUE)}].
+
+```
+
+Next, I'll have to simulate the data table for the rupture data, given the figures per group. Whoa, did we learn some things about random sampling in the wild that gets the blood pressure soaring.
+
+```{r}
+#| label: simulation-rupture-1
+
+
+set.seed(2065)
+
+GraftDef <- defData(
+  varname = "Group",
+  formula = "1;1",
+  dist = "trtAssign"
+)
+
+GraftC <- defCondition(
+  condition = "Group == 0",
+  formula = "0.05333",
+  variance = 0,
+  dist = "binary",
+  link = "identity"
+)
+
+GraftC <- defCondition(
+  GraftC,
+  condition = "Group == 1",
+  formula = "0.1333",
+  variance = 0,
+  dist = "binary",
+  link = "identity"
+)
+
+GraftSim <- genData(
+  n = 180,
+  dtDefs = GraftDef,
+  id = "id")
+
+GraftSim <- addCondition(
+  GraftC,
+  GraftSim,
+  newvar = "Rupture"
+)
+
+TabSim <- gtsummary::tbl_summary(
+  GraftSim,
+  include = !(id),
+  by = "Group",
+  digits = list(
+    Rupture = c(0,2)
+  )
+)
+
+knitr::knit_print(TabSim)
+
+
+```
+
+### Simulation Adjustment
+
+Turns out when we are trying spin up numbers from a paper using the `simstudy` package, setting the seed and plugging in target proportions, particularly with smaller sample sizes gets a bit loose when random sampling takes hold. The target proportions were 7.7% for Group 0 and 13.3% for Group 1, but I had to down tune the formula for one group to retrieve the expected proportions. Instead I had to specify the data table more explicitly to mitigate the sampling error and keep the dataset on track.
+
+```{r}
+#| label: simulation-rupture-2
+
+set.seed(2065)
+
+# Create data with exactly 90 subjects per group
+graft_fixed <- tibble(
+  id = 1:180,
+  Graft = c(rep(0, 90), rep(1, 90))
+)
+
+# Define exact numbers to match paper
+n_ruptures_group0 <- 7  # 7.8% of 90
+n_ruptures_group1 <- 12 # 13.3% of 90
+
+# Randomly assign which subjects get ruptures within each group
+rupture_indices_group0 <- sample(which(graft_fixed$Graft == 0), n_ruptures_group0)
+rupture_indices_group1 <- sample(which(graft_fixed$Graft == 1), n_ruptures_group1)
+
+graft_fixed <- graft_fixed |>
+  mutate(
+    Rupture = case_when(
+      id %in% c(rupture_indices_group0, rupture_indices_group1) ~ 1,
+      TRUE ~ 0
+    )
+  )
+```
+
+```{r}
+#| label: simresults-rupture-2
+
+# Calculate summary statistics
+Graft_summary <- graft_fixed %>%
+  group_by(Graft) |>
+  summarise(
+    n = n(),
+    Ruptures = sum(Rupture),
+    Proportion = mean(Rupture),
+    .groups = "drop"
+  )
+
+Graft_summary |>
+  gt() |>
+  fmt_number(columns = Proportion, decimals = 3) %>%
+  cols_label(
+    Graft = "Graft",
+    n = "N",
+    Ruptures = "Ruptures", 
+    Proportion = "Proportion"
+  )
+```
+
+```{epoxy}
+Using the more direct method, Graft PT achieved exactly **{round(Graft_summary$Proportion[1] * 100,2)}%** ruptures ({Graft_summary$Ruptures[1]}/{Graft_summary$n[1]}) and Graft HT achieved **{round(Graft_summary$Proportion[2] * 100,2)}%** ruptures ({Graft_summary$Ruptures[2]}/{Graft_summary$n[2]}), matching the target proportions without having to tune the formula.
+```
+
+Now that I have a datatable that represents the target paper - I can run the dataframe through the function from CONSORT 16a and see how the p-values look.
+
+```{r}
+#| label: wilcoxon-sim-rupture
+
+# Run 1000 Wilcoxon tests
+RuptureTest <- run_wilcoxon_simulation(
+  data = graft_fixed,
+  outcome_var = "Rupture",
+  group_var = "Graft",
+  n_sims = 1000
+)
+
+
+RuptureSimResult <- RuptureTest |>
+  summarise(ci = list(
+    ggplot2::mean_cl_normal(p_value) |> 
+      rename(
+        mean = y,
+        lwr = ymin,
+        upr = ymax)
+      )
+  ) |> tidyr::unnest(cols = c(ci))
+
+
+
+```
+
+```{epoxy}
+
+So we've returned an average p-value across the simulations of {round(RuptureSimResult$mean,2)}, with confidence intervals of ({round(RuptureSimResult$lwr,3)} - {round(RuptureSimResult$upr,2)}).
+
+This is a substantial increase ({round(((RuptureSimResult$mean - 0.24)/0.24)*100,1)}%) on the reported p-value (0.24). 
+Practically, it makes little difference, but it does point to potentially different assumptions or test configurations. For example, its quite possible that there are different methods for handling ties (or not) set between the simulation here and the original analysis. Obviously there may be situations where these differences can substantially change the interpretation of the findings.
+
+
+
+
+```
+
+According to [@calvert2013], PROMs should be reported from each domain and each timepoint. In the target paper, the PROMs are a bit trickier in terms of reporting, the IKDC and Lysholm scores are not really multidimensional, in the sense that many PROMs in this field capture responses on different *dimensions* or themes, and instead just report a total score of some sort. I think the controversy with this outcome type is whether patients with post-surgery ruptures should be excluded (traditional approach, at the time of the study and really as a contemporary strategy still) or if an adjusted comparison should have been made with all cases followup as per protocol. We can debate this point further in the next chapter.
+
+There are a couple of other problems with the outcomes and estimation in this paper. The first is that none of the between-group comparisons are adjusted for potential confounders, which does not necessarily address confounder bias in this context, but does have an impact on test efficiency. I can see the reasoning here - if there are no differences in covariates between groups, then they don't meet the definition of a confounder. However, adjusted comparisons can be more statistically powerful than unadjusted \[citation\]. The second problem is the impact of contralateral limb ACL rupture on estimates of a number of outcomes reported. In this regard, the contralateral rupture is a *competing risk* (an event that prevents the event of interest from happening; e.g. mortality [@schuster2020]) with respect to the graft survival estimates. If a patient were to subsequently experience such a rupture event, there is a much diminished exposure to ipsilateral rerupture during the first 6-9 months of recovery, as they are laid up and gradually return to activities that expose the reconstructed ligament to re-injury. This can lead to bias (bias upward) of the hazard estimate when using Kaplan-Meier estimation for survival [@kim2007].
+
+## \[CONSORT 27\] Harms
+
+<!--# All important harms or unintended effects in each group (for specific guidance see CONSORT for harms) -->
+
+Harms are reported in the text, but the paper suffers from a lack of structure to how harms were defined, recorded and analysed.
+
+## \[CONSORT 28\] Ancillary Analyses
+
+<!--# Results of any other analyses performed, including subgroup analyses and adjusted analyses, distinguishing pre-specified from exploratory -->
+
+No subgroup or adjusted analyses performed. Exploratory versus pre-specified are not distinguished in the text. Where the target study is particularly problematic is the number of ancillary regression analyses incorporated into the results, but not at all explained in the methods description.
+
+> *Linear regression analysis was used to assess relationship between selected dependent and independent variables.*
+
+With the benefit of hindsight, these regressions are problematic as ad-hoc analyses. The regressions and their interpretation are subject to the Table 2 fallacy. The table 2 fallacy is where the coefficients included in a single regression model are interpreted equally with respect to effects (total vs direct) on the dependent variable [@westreich2013]. While this was a common practice at the time, in the contemporary context, these type of analyses are not useful.
+
+# Discussion
+
+## \[CONSORT 30\] Limitations
+
+<!--# Trial limitations, addressing sources of potential bias related to the approach to collecting or reporting data on harms, imprecision, and, if relevant, multiplicity or selection of analyses-->
+
+<!--# P20/21: PRO–specific limitations and implications for generalizability and clinical practice -->
+
+What did the authors cover in their discussion?
+
+-   Lack of randomisation
+
+-   Lack of blinding
+
+    -   (blinding was not possible): I take some issue with this, this could have been addressed with some more effort during in-clinic visits (e.g. a knee sleeve) and ii) separation of roles within the study team.
+
+-   Inclusion of HT learning curve in the analysis
+
+Limitations specific to PROMs and implications for generalisability and implementation to clinical practice were not covered.
+
+### Potential bias
+
+What was not covered was the potential sources of bias related to the collection and reporting of all outcomes (particularly harms) and the issue of multiplicity of analyses.
+
+### Imprecision
+
+I think there is merit to the argument that the original dataset could be analysed with a more robust approach. But I think the data generating mechanisms that contribute to imprecision in the measurements would need to be addressed. To be clear, this is not a criticism of the target study specifically, in general when we attempt to retrieve measurements from patients there are numerous sources of potential imprecision. In particular, how PROMs are retrieved can have a substantial effect on variation and response consistency.
+
+### Generalisability
+
+<!--# Generalizability (external validity, applicability) of the trial findings -->
+
+Some comments could be made regarding the applicability of the findings to broader practice. I have referred to some issues with inclusion and exclusion criteria above, and the numbers of total reviewed cases per year versus the group size indicate that the study sample was quite narrow.
+
+The question that arises from the present review is the lack of equipoise in the intervention groups and whether other centres with lower volume surgeons and different perioperative care expectations may have achieved different responses. Balancing between the short-term gains of faster return to function in the new treatment option versus the potential for elevated risk of graft rupture with respect to patient preferences is an important component of achieving sufficient equipoise to successfully completing a trial in this context. Further, when it comes to reporting harms from an emerging surgical technique (reconstruction with hamstring graft), it would seem responsible to report all observed harms associated with the procedure by detailed review of *all* cases performed, rather than a small sub-sample as included in this study. Importantly, whether this trial still fits within a contemporary practice in the same way it might have at the turn of the century remains a question.
+
+## \[CONSORT 29\] Interpretation
+
+<!--# Interpretation consistent with results, balancing benefits and harms, and considering other relevant evidence -->
+
+<!--# PRO data should be interpreted in relation to clinical outcomes including survival data, where relevant -->
+
+The first issue is whether the original interpretation was balanced. Overall, I think this is done well with the information and context to hand at the time. However, there are some issues in the benefit of hindsight where the interpretation starts to veer off course;
+
+-   Conflating selective recruitment for "control of variables"
+
+-   Overinflating the importance of non-significant findings for underpowered comparisons
+
+-   Describing trends in OA incidence, with no reference to population norms
+
+-   Relying on flawed regressions (Table 2 fallacy)
+
+    -   
+
+-   Subsequent changes in surgical technique
+
+-   Follow up study results(?)
+
+The second issue is how the paper should be interpreted in the present context. Overall, the following observations are made;
+
+-   Previous authors have assessed the risk of bias in the study, such that the veracity of the findings are said to be *questionable.*
+
+-   The present review revealed;
+
+    -   Underpowered analyses
+
+    -   Risk of Type 1 error due to multiplicity of tests - at least a few of the reported significant p-values are likely to be due to chance
+
+    -   Unadjusted comparisons with simplistic data models
+
+    -   Using binary comparisons in time-to-event outcomes
+
+    -   Ignoring time-varying covariates (e.g. age)
+
+    -   Ignoring competing risks in time-to-event outcomes
+
+The final issue with respect to interpretation is whether the target study stacks up in terms of how its been cited.
+
+Example 1: [@kamatsuki2024]
+
+> *Pinczewski et al \[45\] reported a side-to-side difference in AP laxity of \>2 mm at 2 years after surgery to be associated with an increased risk for graft rupture in a 10-year follow-up study after ACL reconstructions.*
+
+Well let's unpack that a little bit. This finding was reported from a poorly described linear regression, with a risk of Table 2 fallacy. For those unfamiliar, this fallacy is where effect estimates (usually presented in a regression summary making up Table 2 of a clinical research paper) are misinterpreted to be of the same type (direct versus indirect) when relaying coefficients [@westreich2013]. Full disclosure here, this is a mistake we have all made at some point in this domain, but it is relevant here when assessing the appropriateness of key papers.
+
+Example 2: [@khan2024]
+
+> *the available literature suggests a higher contralateral tear rate with BPTB autografts relative to HST autografts \[13-**15**\].*
+
+This finding is referenced from a binary comparison between graft groups that is not well described in the text of the paper. It is unclear what denominator has been used in the calculation (N = 90?). The issues with using binary classification in time-to-event outcomes, has been discussed elsewhere [@salika2022]. Overall, ignoring censoring and in this domain, the competing risk of injury (see CONSORT 17a) to either limb with respect to reinjury risk is fraught and needs to be re-examined.
+
+Example 3: [@widhalm2024]
+
+> *Since the objective result measurements of ROM and stability do not necessarily correspond to the subjective functionality of a knee joint after cruciate ligament reconstruction \[40\], the subjective outcome was evaluated by using four standardized questionnaires frequently used in studies: the International Knee Documentation Committee Subjective Knee Form (IKDC) \[19,40,**41**\],*
+
+This example is frustratingly common in the literature - speaking from experience, it is incredibly easy to identify a paper that shares the name of the scale you think you want to use and it turns out to be i) a different version of the same scale created by the original developers, ii) an iteration or refinement by a different group or iii) not the same scale at all, just mislabelled or shares elements of the name. Unfortunately for this citing paper, the IKDC they are referring to is the IKDC2000, which is not the same questionnaire used in the article of interest (although the subjective questions are similar).
+
+# References
+
+Literature and package usage
