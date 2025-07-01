@@ -93,6 +93,7 @@ Load up required packages in advance using *pacman* package (v`{r} utils::packag
 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
+  "tidyverse",
   "cardx",
   "parallelly",
   "gargle",
@@ -100,7 +101,6 @@ pacman::p_load(
   "gert",
   "rsprite2",
   "scrutiny",
-  "pwrss",
   "parallel",
   "progressr",
   "stringdist",
@@ -111,7 +111,6 @@ pacman::p_load(
   "confintr",
   "simstudy",
   "statcheck",
-  "gert",
   "rcrossref",
   "httr",
   "jsonlite",
@@ -121,40 +120,19 @@ pacman::p_load(
   "furrr",
   "memoise",
   "googlesheets4",
-  "openxlsx2",
   "readr",
-  "purrr",
-  "tidyverse",
-  "tidymodels",
-  "tidytext",
-  "stopwords",
-  "tictoc",
-  "lubridate",
   "forcats",
   "gt",
-  "consort",
   "gtsummary",
-  "flextable",
   "survival",
   "ggplot2",
   "ggdist",
   "ggsurvfit",
   "ggfortify",
-  "mice",
-  "marginaleffects",
-  "patchwork",
-  "naniar",
-  "quantreg",
-  "broom",
-  "broom.helpers",
   "labelled",
   "epoxy",
-  "broom.mixed",
-  "lme4",
-  "janitor",
-  "progressr",
-  "DT",
   "grateful",
+  "Hmisc",
   install = TRUE,
   update = FALSE
 )
@@ -1030,8 +1008,8 @@ IdealSim$Outcome[IdealSim$Graft == 0] <- c(rep(0, 18), rep(1, 40))
 IdealSim$Outcome[IdealSim$Graft == 1] <- c(rep(0, 28), rep(1, 25))
 
 IdealSim %>%
-  group_by(Graft) %>%
-  summarize(Proportion = mean(Outcome)*100) |> gt::gt() |> fmt_number(columns = Proportion, decimals = 2)
+  group_by(Graft) |>
+  dplyr::summarise(Proportion = mean(Outcome)*100) |> gt::gt() |> fmt_number(columns = Proportion, decimals = 2)
 ```
 
 Write a function to simulate the *same* between-group test.
@@ -1640,7 +1618,7 @@ GraftDef <- defData(
 )
 
 GraftC <- defCondition(
-  condition = "Group == 0",
+  condition = "Group == 1",
   formula = "0.05333",
   variance = 0,
   dist = "binary",
@@ -1649,7 +1627,7 @@ GraftC <- defCondition(
 
 GraftC <- defCondition(
   GraftC,
-  condition = "Group == 1",
+  condition = "Group == 0",
   formula = "0.1333",
   variance = 0,
   dist = "binary",
@@ -1697,8 +1675,8 @@ graft_fixed <- tibble(
 )
 
 # Define exact numbers to match paper
-n_ruptures_group0 <- 7  # 7.8% of 90
-n_ruptures_group1 <- 12 # 13.3% of 90
+n_ruptures_group0 <- 12 # 13.3% of 90
+n_ruptures_group1 <- 7  # 7.8% of 90
 
 # Randomly assign which subjects get ruptures within each group
 rupture_indices_group0 <- sample(which(graft_fixed$Graft == 0), n_ruptures_group0)
@@ -1738,7 +1716,7 @@ Graft_summary |>
 ```
 
 ```{epoxy}
-Using the more direct method, Graft PT achieved exactly **{round(Graft_summary$Proportion[1] * 100,2)}%** ruptures ({Graft_summary$Ruptures[1]}/{Graft_summary$n[1]}) and Graft HT achieved **{round(Graft_summary$Proportion[2] * 100,2)}%** ruptures ({Graft_summary$Ruptures[2]}/{Graft_summary$n[2]}), matching the target proportions without having to tune the formula.
+Using the more direct method, Graft HT achieved exactly **{round(Graft_summary$Proportion[1] * 100,2)}%** ruptures ({Graft_summary$Ruptures[1]}/{Graft_summary$n[1]}) and Graft PT achieved **{round(Graft_summary$Proportion[2] * 100,2)}%** ruptures ({Graft_summary$Ruptures[2]}/{Graft_summary$n[2]}), matching the target proportions without having to tune the formula.
 ```
 
 Now that I have a datatable that represents the target paper - I can run the dataframe through the function from CONSORT 16a and see how the p-values look.
@@ -1756,9 +1734,9 @@ RuptureTest <- run_wilcoxon_simulation(
 
 
 RuptureSimResult <- RuptureTest |>
-  summarise(ci = list(
+  dplyr::summarise(ci = list(
     ggplot2::mean_cl_normal(p_value) |> 
-      rename(
+      dplyr::rename(
         mean = y,
         lwr = ymin,
         upr = ymax)
