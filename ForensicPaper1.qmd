@@ -52,27 +52,25 @@ If you're expecting me to offer solutions in this report, you will have to wait 
 
 For those jumping into this without a strong knowledge of the specifics, hopefully the glossary table below will help spin you up.
 
-::: {#tbl-glossary}
-+--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Abbreviation | Definition                                | Usage \| Context                                                                                                                                                                                                 |
-+==============+===========================================+==================================================================================================================================================================================================================+
-| ACL          | anterior cruciate ligament                | Ligament structure in the knee for which this trial examined different materials used to fashion a graft to replace those that have rupture (torn) usually due to an rotation or impact event acting on the knee |
-+--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ACLR         | anterior cruciate ligament reconstruction |                                                                                                                                                                                                                  |
-+--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| PT           | patella tendon                            |                                                                                                                                                                                                                  |
-+--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| HT           | hamstring tendon                          |                                                                                                                                                                                                                  |
-+--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| RoB          | risk of bias                              |                                                                                                                                                                                                                  |
-+--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| SR-MA        | systematic review and meta-analysis       |                                                                                                                                                                                                                  |
-+--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|              |                                           |                                                                                                                                                                                                                  |
-+--------------+-------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+ACL
 
-Glossary of terms used in the report
-:::
+:   anterior cruciate ligament: Ligament structure in the knee for which this trial examined different materials used to fashion a graft to replace those that have rupture (torn) usually due to an rotation or impact event acting on the knee
+
+ACLR
+
+:   anterior cruciate ligament reconstruction: A surgical procedure in which portals are made in the front and side of the knee, tunnels are drilled into the femur and tibia that emerge at the footprints of the previous ACL and graft material is inserted through the tunnels, to be fixed at the top of the tunnel using a screw or plug.
+
+PT
+
+:   patella tendon: Graft material is sourced from the patient's own knee (autograft) by removal of a strip of tendon\|ligament between the patella and the tibia. In the context of the target study, bone plugs are also removed for insertion into the tunnel for better graft integration.
+
+HT
+
+:   hamstring tendon: Graft material is sourced from the patient's own thigh (autograft) by removal of a strip of tendon from the semitendinosis and gracilis that merge on the inside of the tibia. No bone plug is removed with this graft.
+
+RoB
+
+:   risk of bias:
 
 # Executive Summary
 
@@ -1820,7 +1818,7 @@ Limitations specific to PROMs and implications for generalisability and implemen
 
 ### Potential bias
 
-What was not covered was the potential sources of bias related to the collection and reporting of all outcomes (particularly harms) and the issue of multiplicity of analyses.
+What was not covered was the potential sources of bias related to the collection and reporting of all outcomes (particularly harms) and the issue of multiplicity of analyses. Bias in orthopaedic RCTs is prevalent [@chess2013] and much work remains
 
 ### Imprecision
 
