@@ -70,7 +70,11 @@ HT
 
 RoB
 
-:   risk of bias:
+:   risk of bias: the likelihood that features of the study design or conduct of the study will give misleading results \[[NHMRC](https://www.nhmrc.gov.au/guidelinesforguidelines/develop/assessing-risk-bias#:~:text=Risks%20of%20bias%20are%20the,interventions%20or%20harm%20to%20consumers.https://www.nhmrc.gov.au/guidelinesforguidelines/develop/assessing-risk-bias)\]
+
+SR-MA
+
+:   systematic review - meta-analysis
 
 # Executive Summary
 
@@ -78,7 +82,7 @@ The article has not been retracted, nor have any comments been made about it on 
 
 It is an attempted randomised (partial randomisation) comparison between two sources of graft material for ACL reconstruction that is potentially influenced by bias in patient selection, lack of blinding and multiplicity of analyses for outcomes that have not been pre-registered. The aims and objectives are not sufficiently specific or structured to allow adequate assessment of the analysis. It is likely that the study never existed in a state of clinical equipoise with respect to the treatment options, or the risk-benefits of each option were not fully understood at the time. Inclusion/exclusion criteria for several analyses have been altered between followup reports on the same cohort and many of the findings still being cited in the contemporary literature are not supported when considering the issues with the statistical analysis and the lack of sample size (power) calculation prior to patient recruitment. The key findings are vulnerable to competing risks (e.g. graft survival) and many cited findings rely on poorly reported regression analyses, where their interpretation has been subject to the Table 2 fallacy.
 
-Overall, this article should probably be retired from public discourse as a premature trial, that lacked robust design and was haphazardly reported, which compared an emerging (at the time of recruitment) treatment option compared to the accepted standard for ACL rupture in patients presenting for surgical review. Patient preference for short-term function restoration balanced against potential of elevated risk of re-rupture remains an under-explored component of establishing clinical equipoise in this patient population.
+Overall, this article should probably be retired from public discourse as a premature trial, in that the conditions required for the conduct of a fair trial were not in place prior to commencement. Furthermore, the attempted trial lacked robust design and was haphazardly reported over multiple followup reports, which compared an emerging (at the time of recruitment) treatment option compared to the accepted standard for ACL rupture in patients presenting for surgical review. Patient preference for short-term function restoration balanced against potential of elevated risk of re-rupture remains an under-explored component of establishing clinical equipoise in this patient population.
 
 ## Preparation
 
@@ -774,6 +778,7 @@ This paper should have been put through the wringer by at least one systematic r
 First we'll filter down the citation list retrieved previously just for recent systematic reviews.
 
 ```{r}
+#| label: srma-filter
 
 CitationsSR <- Citations |> dplyr::filter(
   stringr::str_detect(title,"(systematic.*review)|(meta.*analysis)")
@@ -784,7 +789,7 @@ CitationsSR <- Citations |> dplyr::filter(
 
 ## Risk of Bias
 
-I hope you as a gentle reader will forgive a slightly less-than-rigourous process of retrieving relevant reviews here, but with code and data sources you will be empowered to go and replicate this investigation and publish a pointed rebuttal with new evidence. What I found in my reading was a recent review [@sollberger2022] that attempted to assess long term results after ACLR with PT vs HS autograft with a minimum follow up of 10 years, but did not include our target study in their analysis, largely as it didnt meet the randomisation criterion. Another review [@migliorini2020] included it in their quality assessment, but did not break down their RoB ratings by individual paper.
+I hope you as a gentle reader will forgive a slightly less-than-rigourous process of retrieving relevant reviews here, but with code and data sources you will be empowered to go and replicate this investigation and publish a pointed rebuttal with new evidence. What I found in my reading was a recent review [@sollberger2022] that attempted to assess long term results after ACLR with PT vs HT autograft with a minimum follow up of 10 years, but did not include our target study in their analysis, largely as it didnt meet the randomisation criterion. Another review [@migliorini2020] included it in their quality assessment, but did not break down their RoB ratings by individual paper.
 
 One systematic review [@janssen2017] used the Cochrane library checklist for RCTs, with two reviewers conducting independent ratings. It's important to keep in mind that this checklist is not currently the recommended method for assessing risk of bias in RCTs (Cochrane chapter 8) [@Cumpston2019], but it does give us some idea of the methodological issues with this citation of interest, before we start our own review. The authors classified this trial as a *clinical controlled trial* (no formal randomisation). The overall rating from the combined checklist score was *Questionable (*score was between 30% and 50%). The citation of interest was marked down for the following items;
 
@@ -808,7 +813,7 @@ This area is one that is done poorly overall in this domain and I am not in a po
 
 Prospective controlled trial.
 
-This term is usually reserved for randomised trials, which this is not in reality. This is really an interrupted cohort study, or an interrupted time series. Historical controls in randomised trials remain an emerging topic in trial methodology and the relevant methods were not well developed in the period that this study was designed, initial run and first analysed.
+This term is usually reserved for randomised trials, which this is not in reality. This is really an interrupted cohort study, or an interrupted time series. Historical controls in randomised trials remain an emerging topic in trial methodology [@hall2020] and the relevant methods were not well developed in the period that this study was designed, initial run and first analysed.
 
 ## CONSORT \[10\] Changes to methods
 
@@ -866,7 +871,7 @@ Yes, the representativeness of the sample is questionable for a number of reason
 
 The authors *have* mentioned that the trial can be used to establish a baseline of outcomes in this population, and I think this an overreach given the limitations on its external validity.
 
-## \[CONSORT 12b\] Patient Eligibility
+## \[CONSORT 12b\] Provider Eligibility
 
 <!--# When applicable, eligibility criteria for centers and for care providers -->
 
