@@ -1,5 +1,5 @@
 ---
-title: "Application of forensic meta-science to selected orthopaedic papers: Paper 1 10.1177/0363546506296042 (Pinczewski et al 2007)"
+title: "Scrutiny of selected orthopaedic papers: Paper 1 10.1177/0363546506296042 (Pinczewski et al 2007)"
 description: | 
   A summary of the CONSORT checklist applied to the target paper
 author: 
