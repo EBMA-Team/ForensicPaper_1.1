@@ -1,5 +1,5 @@
 ---
-title: "Application of forensic meta-science to selected orthopaedic papers: Paper 1 10.1177/0363546506296042 (Pincz-ewski et al 2007)"
+title: "Application of forensic meta-science to selected orthopaedic papers: Paper 1 10.1177/0363546506296042 (Pinczewski et al 2007)"
 description: | 
   A summary of the CONSORT checklist applied to the target paper
 author: 
@@ -747,7 +747,7 @@ The paper aim as stated;
 
 > *This study represents a report on the long-term outcomes of ACL reconstruction on knee function using an endoscopic technique, as well as a prospective comparison of the isolated effects of one extrinsic variable (graft choice).*
 
-Herein lies origin of many of the problems I have with this paper. It doesnt follow a *pico(s)* structure first introduced by [@thewell1995], with the *s* a more recent introduction [@liberati2009] representing the study design. Without a focused question following this structure, it becomes difficult to assess whether the trial is appropriately reported or adequately structured to address its primary aim. In addition, there are no specific objectives or hypotheses related to outcomes of benefits or harms (as per CONSORT Harms) and no mention of PROMs (as per CONSORT PRO extension).
+Herein lies the origin of many of the problems I have with this paper. It doesnt follow a *pico(s)* structure first introduced by [@thewell1995], with the *s* a more recent introduction [@liberati2009] representing the study design. Without a focused question following this structure, it becomes difficult to assess whether the trial is appropriately reported or adequately structured to address its primary aim. In addition, there are no specific objectives or hypotheses related to outcomes of benefits or harms (as per CONSORT Harms) and no mention of PROMs (as per CONSORT PRO extension).
 
 # Methods - External assessment
 
@@ -1830,8 +1830,6 @@ The first issue is whether the original interpretation was balanced. Overall, I 
 -   Describing trends in OA incidence, with no reference to population norms
 
 -   Relying on flawed regressions (Table 2 fallacy)
-
-    -   
 
 -   Subsequent changes in surgical technique
 
